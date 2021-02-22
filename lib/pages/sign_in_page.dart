@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:weight_tracker_app/models/database_functions.dart';
 import 'package:weight_tracker_app/pages/home_page.dart';
 
 class SingInPage extends StatefulWidget {
@@ -49,27 +50,6 @@ class _SingInPageState extends State<SingInPage> {
     );
   }
 
-  Future createUserDoc() async {
-    var userDoc = FirebaseFirestore.instance
-        .collection('user_weights')
-        .doc(_auth.currentUser.uid)
-        .snapshots();
-    print('USER DOC RESULT: ' + userDoc.toString());
-
-    await FirebaseFirestore.instance
-        .collection('user_weights')
-        .doc(_auth.currentUser.uid)
-        .set(
-       {
-        'data': FieldValue.arrayUnion([
-          
-        ]),
-        'uid': _auth.currentUser.uid,
-      },
-      SetOptions(merge: true),
-    );
-  }
-
   void signInAnonymously() {
     _auth.signInAnonymously().then((result) async {
       setState(() {
@@ -77,7 +57,7 @@ class _SingInPageState extends State<SingInPage> {
         print('User Signed In Data: ' + user.toString());
       });
       if (_auth.currentUser != null) {
-        await createUserDoc();
+        await DatabaseService(uid: _auth.currentUser.uid).createUserDoc();
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -89,4 +69,5 @@ class _SingInPageState extends State<SingInPage> {
       }
     });
   }
+
 }

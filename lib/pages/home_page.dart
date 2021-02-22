@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:weight_tracker_app/models/database_functions.dart';
 import 'package:weight_tracker_app/pages/sign_in_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -27,6 +28,7 @@ class _HomePageState extends State<HomePage> {
   int editedWeight = 0;
   List<dynamic> finalData = [];
   final _formKey = GlobalKey<FormState>();
+  TextEditingController _textController = new TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -73,6 +75,7 @@ class _HomePageState extends State<HomePage> {
                           TextFormField(
                             style: TextStyle(fontSize: 22),
                             keyboardType: TextInputType.number,
+                            controller: _textController,
                             onChanged: (value) {
                               setState(() {
                                 weight = int.parse(value);
@@ -93,7 +96,7 @@ class _HomePageState extends State<HomePage> {
                                 //     duration: Duration(seconds: 2),
                                 //     content: Text('Saving Data')));
 
-                                var result = await saveDataToDB(weight)
+                                var result = await DatabaseService(uid: _auth.currentUser.uid).saveDataToDB(weight)
                                     .catchError((Object error) =>
                                         ScaffoldMessenger.of(context)
                                             .showSnackBar(SnackBar(
@@ -124,6 +127,9 @@ class _HomePageState extends State<HomePage> {
                                             ],
                                           )));
                                 }
+
+                                _textController.text = '';
+                                
                               }
                             },
                             child: Text('Submit Details'),
@@ -164,7 +170,7 @@ class _HomePageState extends State<HomePage> {
                                                 setState(() {
                                                   finalData.removeAt(i);
                                                 });
-                                                await deleteWeightEntry();
+                                                await DatabaseService(uid: _auth.currentUser.uid).deleteWeightEntry(finalData);
                                               },
                                               onTap: () async {
                                                 await showDialog(
@@ -204,9 +210,10 @@ class _HomePageState extends State<HomePage> {
                                                                         .now()
                                                               };
                                                             });
-                                                            await editWeightEntry();
+                                                            await DatabaseService(uid: _auth.currentUser.uid).editWeightEntry(finalData);
                                                             Navigator.pop(
                                                                 _context);
+                                                            _textController.text = '';
                                                           },
                                                         ),
                                                         FlatButton(
@@ -238,7 +245,7 @@ class _HomePageState extends State<HomePage> {
                                                       finalData[i]['timestamp']
                                                           .toDate()
                                                           .toString()
-                                                          .substring(0, 11)),
+                                                          .substring(0, 19)),
                                                   SizedBox(height: 10),
                                                 ],
                                               ),
@@ -265,7 +272,7 @@ class _HomePageState extends State<HomePage> {
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () async {
-            await signOut();
+            await DatabaseService(uid: _auth.currentUser.uid).signOut(context);
           },
           tooltip: 'Sign Out',
           child: Icon(Icons.logout),
@@ -274,56 +281,4 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Future deleteWeightEntry() async {
-    await FirebaseFirestore.instance
-        .collection('user_weights')
-        .doc(widget.user.uid)
-        .set(
-      {
-        'data': finalData,
-      },
-      SetOptions(merge: true),
-    );
-  }
-
-  Future editWeightEntry() async {
-    await FirebaseFirestore.instance
-        .collection('user_weights')
-        .doc(widget.user.uid)
-        .set(
-      {
-        'data': finalData,
-      },
-      SetOptions(merge: true),
-    );
-  }
-
-  Future saveDataToDB(weight) async {
-    await FirebaseFirestore.instance
-        .collection('user_weights')
-        .doc(widget.user.uid)
-        .set(
-      {
-        'data': FieldValue.arrayUnion([
-          {
-            'weight': weight,
-            'timestamp': DateTime.now(),
-          }
-        ]),
-        'uid': widget.user.uid,
-      },
-      SetOptions(merge: true),
-    );
-  }
-
-  Future signOut() async {
-    await _auth.signOut();
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => SingInPage(),
-      ),
-    );
-    print('Authentication Status: ' + _auth.currentUser.toString());
-  }
 }
