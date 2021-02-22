@@ -1,3 +1,3 @@
-# weight_tracker_app
+# weight tracker app
 
 
