@@ -50,6 +50,7 @@ class _SingInPageState extends State<SingInPage> {
     );
   }
 
+//Anonymous Sign In function
   void signInAnonymously() {
     _auth.signInAnonymously().then((result) async {
       setState(() {

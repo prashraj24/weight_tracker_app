@@ -96,7 +96,9 @@ class _HomePageState extends State<HomePage> {
                                 //     duration: Duration(seconds: 2),
                                 //     content: Text('Saving Data')));
 
-                                var result = await DatabaseService(uid: _auth.currentUser.uid).saveDataToDB(weight)
+                                var result = await DatabaseService(
+                                        uid: _auth.currentUser.uid)
+                                    .saveDataToDB(weight)
                                     .catchError((Object error) =>
                                         ScaffoldMessenger.of(context)
                                             .showSnackBar(SnackBar(
@@ -129,7 +131,6 @@ class _HomePageState extends State<HomePage> {
                                 }
 
                                 _textController.text = '';
-                                
                               }
                             },
                             child: Text('Submit Details'),
@@ -170,7 +171,11 @@ class _HomePageState extends State<HomePage> {
                                                 setState(() {
                                                   finalData.removeAt(i);
                                                 });
-                                                await DatabaseService(uid: _auth.currentUser.uid).deleteWeightEntry(finalData);
+                                                await DatabaseService(
+                                                        uid: _auth
+                                                            .currentUser.uid)
+                                                    .deleteWeightEntry(
+                                                        finalData);
                                               },
                                               onTap: () async {
                                                 await showDialog(
@@ -210,10 +215,16 @@ class _HomePageState extends State<HomePage> {
                                                                         .now()
                                                               };
                                                             });
-                                                            await DatabaseService(uid: _auth.currentUser.uid).editWeightEntry(finalData);
+                                                            await DatabaseService(
+                                                                    uid: _auth
+                                                                        .currentUser
+                                                                        .uid)
+                                                                .editWeightEntry(
+                                                                    finalData);
                                                             Navigator.pop(
                                                                 _context);
-                                                            _textController.text = '';
+                                                            _textController
+                                                                .text = '';
                                                           },
                                                         ),
                                                         FlatButton(
@@ -280,5 +291,4 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
 }
